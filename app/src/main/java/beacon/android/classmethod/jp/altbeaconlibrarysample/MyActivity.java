@@ -4,6 +4,8 @@ import android.app.Activity;
 import android.app.ActionBar;
 import android.app.Fragment;
 import android.os.Bundle;
+import android.os.RemoteException;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -11,9 +13,15 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.os.Build;
 
+import org.altbeacon.beacon.BeaconConsumer;
+import org.altbeacon.beacon.BeaconManager;
+import org.altbeacon.beacon.MonitorNotifier;
+import org.altbeacon.beacon.Region;
 
 
-public class MyActivity extends Activity {
+public class MyActivity extends Activity implements BeaconConsumer {
+
+    private BeaconManager beaconManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -24,8 +32,22 @@ public class MyActivity extends Activity {
                     .add(R.id.container, new PlaceholderFragment())
                     .commit();
         }
+
+        // staticメソッドで取得
+        beaconManager = BeaconManager.getInstanceForApplication(this);
     }
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+        beaconManager.unbind(this);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        beaconManager.bind(this);
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -44,6 +66,36 @@ public class MyActivity extends Activity {
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onBeaconServiceConnect() {
+        beaconManager.setMonitorNotifier(new MonitorNotifier() {
+            @Override
+            public void didEnterRegion(Region region) {
+                // 領域への入場を検知
+                Log.d("Beacon", "ENTER Region.");
+            }
+
+            @Override
+            public void didExitRegion(Region region) {
+                // 領域からの退場を検知
+                Log.d("Beacon", "EXIT Region. ");
+            }
+
+            @Override
+            public void didDetermineStateForRegion(int i, Region region) {
+                // 領域への入退場のステータス変化を検知
+                Log.d("MyActivity", "DetermineState: " + i);
+            }
+        });
+
+        try {
+            // ビーコン情報の監視を開始
+            beaconManager.startMonitoringBeaconsInRegion(new Region("unique-id-001", null, null, null));
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
