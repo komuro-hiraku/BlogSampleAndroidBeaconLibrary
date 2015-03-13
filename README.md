@@ -1,0 +1,4 @@
+# BlogSampleAndroidBeaconLibrary
+
+Android Beacon Libraryのブログ用のソースです。
+ブランチを回で切ってますので、シリーズの回に合わせてチェックアウトしてください。
