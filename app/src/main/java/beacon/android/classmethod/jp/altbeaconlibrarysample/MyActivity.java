@@ -15,6 +15,7 @@ import android.os.Build;
 
 import org.altbeacon.beacon.BeaconConsumer;
 import org.altbeacon.beacon.BeaconManager;
+import org.altbeacon.beacon.BeaconParser;
 import org.altbeacon.beacon.MonitorNotifier;
 import org.altbeacon.beacon.Region;
 
@@ -22,6 +23,9 @@ import org.altbeacon.beacon.Region;
 public class MyActivity extends Activity implements BeaconConsumer {
 
     private BeaconManager beaconManager;
+
+    // iBeaconのデータを認識するためのParserフォーマット
+    public static final String IBEACON_FORMAT = "m:2-3=0215,i:4-19,i:20-21,i:22-23,p:24-24";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,6 +39,10 @@ public class MyActivity extends Activity implements BeaconConsumer {
 
         // staticメソッドで取得
         beaconManager = BeaconManager.getInstanceForApplication(this);
+
+        // BeaconParseを設定
+        beaconManager.getBeaconParsers()
+                .add(new BeaconParser().setBeaconLayout(IBEACON_FORMAT));
     }
 
     @Override
