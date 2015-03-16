@@ -78,6 +78,9 @@ public class MyActivity extends Activity implements BeaconConsumer {
 
     @Override
     public void onBeaconServiceConnect() {
+        beaconManager.getBeaconParsers()
+                .add(new BeaconParser().setBeaconLayout(IBEACON_FORMAT));
+
         beaconManager.setMonitorNotifier(new MonitorNotifier() {
             @Override
             public void didEnterRegion(Region region) {
