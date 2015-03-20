@@ -4,6 +4,8 @@ import android.app.Activity;
 import android.app.ActionBar;
 import android.app.Fragment;
 import android.os.Bundle;
+import android.os.RemoteException;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -11,9 +13,22 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.os.Build;
 
+import org.altbeacon.beacon.Beacon;
+import org.altbeacon.beacon.BeaconConsumer;
+import org.altbeacon.beacon.BeaconManager;
+import org.altbeacon.beacon.BeaconParser;
+import org.altbeacon.beacon.RangeNotifier;
+import org.altbeacon.beacon.Region;
+
+import java.util.Collection;
 
 
-public class MyActivity extends Activity {
+public class MyActivity extends Activity implements BeaconConsumer {
+
+    private BeaconManager beaconManager;
+
+    // iBeaconのデータを認識するためのParserフォーマット
+    public static final String IBEACON_FORMAT = "m:2-3=0215,i:4-19,i:20-21,i:22-23,p:24-24";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -24,8 +39,26 @@ public class MyActivity extends Activity {
                     .add(R.id.container, new PlaceholderFragment())
                     .commit();
         }
+
+        // staticメソッドで取得
+        beaconManager = BeaconManager.getInstanceForApplication(this);
+
+        // BeaconParseを設定
+        beaconManager.getBeaconParsers()
+                .add(new BeaconParser().setBeaconLayout(IBEACON_FORMAT));
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        beaconManager.bind(this);
+    }
+
+    @Override
+    protected void onPause() {
+        beaconManager.unbind(this);
+        super.onPause();
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -45,6 +78,25 @@ public class MyActivity extends Activity {
         }
         return super.onOptionsItemSelected(item);
     }
+
+@Override
+public void onBeaconServiceConnect() {
+    beaconManager.setRangeNotifier(new RangeNotifier() {
+        @Override
+        public void didRangeBeaconsInRegion(Collection<Beacon> beacons, Region region) {
+            for(Beacon beacon : beacons) {
+                Log.d("MyActivity", "UUID:" + beacon.getId1() + ", major:" + beacon.getId2() + ", minor:" + beacon.getId3() + ", Distance:" + beacon.getDistance());
+            }
+        }
+    });
+
+    try {
+        // 距離観測の開始
+        beaconManager.startRangingBeaconsInRegion(new Region("unique-ranging-region-id", null, null, null));
+    } catch (RemoteException e) {
+        e.printStackTrace();
+    }
+}
 
     /**
      * A placeholder fragment containing a simple view.
