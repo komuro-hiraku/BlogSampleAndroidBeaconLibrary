@@ -79,24 +79,24 @@ public class MyActivity extends Activity implements BeaconConsumer {
         return super.onOptionsItemSelected(item);
     }
 
-@Override
-public void onBeaconServiceConnect() {
-    beaconManager.setRangeNotifier(new RangeNotifier() {
-        @Override
-        public void didRangeBeaconsInRegion(Collection<Beacon> beacons, Region region) {
-            for(Beacon beacon : beacons) {
-                Log.d("MyActivity", "UUID:" + beacon.getId1() + ", major:" + beacon.getId2() + ", minor:" + beacon.getId3() + ", Distance:" + beacon.getDistance());
+    @Override
+    public void onBeaconServiceConnect() {
+        beaconManager.setRangeNotifier(new RangeNotifier() {
+            @Override
+            public void didRangeBeaconsInRegion(Collection<Beacon> beacons, Region region) {
+                for(Beacon beacon : beacons) {
+                    Log.d("MyActivity", "UUID:" + beacon.getId1() + ", major:" + beacon.getId2() + ", minor:" + beacon.getId3() + ", Distance:" + beacon.getDistance());
+                }
             }
-        }
-    });
+        });
 
-    try {
-        // 距離観測の開始
-        beaconManager.startRangingBeaconsInRegion(new Region("unique-ranging-region-id", null, null, null));
-    } catch (RemoteException e) {
-        e.printStackTrace();
+        try {
+            // 距離観測の開始
+            beaconManager.startRangingBeaconsInRegion(new Region("unique-ranging-region-id", null, null, null));
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
     }
-}
 
     /**
      * A placeholder fragment containing a simple view.
